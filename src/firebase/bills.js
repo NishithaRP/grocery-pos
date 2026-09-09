@@ -33,6 +33,7 @@ function todayKey() {
 // worth revisiting if this grows into a multi-cashier setup.)
 export async function createBill(cartItems, meta = {}) {
   const total = cartItems.reduce((sum, l) => sum + l.unit_price * l.qty, 0);
+  const totalCost = cartItems.reduce((sum, l) => sum + (Number(l.cost_price) || 0) * l.qty, 0);
   const discount = Number(meta.discount) || 0;
   const finalTotal = total - discount;
 
@@ -57,6 +58,7 @@ export async function createBill(cartItems, meta = {}) {
       unit: line.unit || "",
       qty: line.qty,
       unit_price_at_sale: line.unit_price,
+      cost_price_at_sale: Number(line.cost_price) || 0,
       subtotal: line.unit_price * line.qty,
     });
 
@@ -69,6 +71,7 @@ export async function createBill(cartItems, meta = {}) {
     summaryRef,
     {
       total_sales: increment(finalTotal),
+      total_cost: increment(totalCost),
       bill_count: increment(1),
       updated_at: serverTimestamp(),
     },

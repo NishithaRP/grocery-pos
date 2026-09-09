@@ -1,10 +1,18 @@
 export default function DailySalesReport({ summary, itemSales }) {
+  const grossIncome = Number(summary.total_sales || 0) - Number(summary.total_cost || 0);
+
   return (
     <div>
       <div className="stat-grid">
         <div className="stat">
           <div className="stat-label">Total sales today</div>
           <div className="stat-value">Rs. {Number(summary.total_sales || 0).toFixed(2)}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">Gross income today</div>
+          <div className="stat-value" style={{ color: grossIncome < 0 ? "var(--danger)" : undefined }}>
+            Rs. {grossIncome.toFixed(2)}
+          </div>
         </div>
         <div className="stat">
           <div className="stat-label">Bills today</div>
@@ -35,6 +43,7 @@ export default function DailySalesReport({ summary, itemSales }) {
                 <th>Item</th>
                 <th className="num">Qty sold</th>
                 <th className="num">Revenue</th>
+                <th className="num">Profit</th>
               </tr>
             </thead>
             <tbody>
@@ -43,6 +52,7 @@ export default function DailySalesReport({ summary, itemSales }) {
                   <td>{row.item_name}</td>
                   <td className="num">{row.qty}</td>
                   <td className="num">Rs. {row.revenue.toFixed(2)}</td>
+                  <td className="num">Rs. {row.profit.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>

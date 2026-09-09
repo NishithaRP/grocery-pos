@@ -19,7 +19,9 @@ function toDateKey(d) {
 export async function getDailySummary(date = new Date()) {
   const key = toDateKey(date);
   const snap = await getDoc(doc(db, "daily_summaries", key));
-  return snap.exists() ? { date: key, ...snap.data() } : { date: key, total_sales: 0, bill_count: 0 };
+  return snap.exists()
+    ? { date: key, ...snap.data() }
+    : { date: key, total_sales: 0, total_cost: 0, bill_count: 0 };
 }
 
 // For a longer range, just fetch the relevant daily_summaries docs by id.
@@ -50,15 +52,16 @@ export async function getItemSalesForDay(date = new Date()) {
     linesSnap.docs.forEach((d) => {
       const line = d.data();
       if (!totals[line.item_id]) {
-        totals[line.item_id] = { item_name: line.item_name, qty: 0, revenue: 0 };
+        totals[line.item_id] = { item_name: line.item_name, qty: 0, revenue: 0, cost: 0 };
       }
       totals[line.item_id].qty += line.qty;
       totals[line.item_id].revenue += line.subtotal;
+      totals[line.item_id].cost += (line.cost_price_at_sale || 0) * line.qty;
     });
   }
 
   return Object.entries(totals)
-    .map(([item_id, v]) => ({ item_id, ...v }))
+    .map(([item_id, v]) => ({ item_id, ...v, profit: v.revenue - v.cost }))
     .sort((a, b) => b.revenue - a.revenue);
 }
 

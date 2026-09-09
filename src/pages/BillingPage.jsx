@@ -31,6 +31,7 @@ export default function BillingPage() {
           name: item.name,
           unit: item.unit,
           unit_price: item.selling_price,
+          cost_price: item.cost_price,
           qty: 1,
           max_qty: item.stock_qty,
         },
