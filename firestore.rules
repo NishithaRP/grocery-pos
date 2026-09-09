@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Items & price history ---
+    match /items/{itemId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // tighten to admin-only once roles exist
+
+      match /price_history/{entryId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null;
+      }
+    }
+
+    // --- Bills & bill items ---
+    // Bills are immutable once created: no update/delete from the client.
+    match /bills/{billId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow update, delete: if false;
+
+      match /bill_items/{lineId} {
+        allow create: if request.auth != null;
+        allow read: if request.auth != null;
+        allow update, delete: if false;
+      }
+    }
+
+    // --- Daily summaries: written only by the Cloud Function (admin SDK) ---
+    match /daily_summaries/{date} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}
