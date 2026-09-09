@@ -5,7 +5,10 @@ import Loader from "../components/shared/Loader";
 import { getDailySummary, getItemSalesForDay, getLowStockItems } from "../firebase/reports";
 
 function toInputValue(date) {
-  return date.toISOString().split("T")[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export default function ReportsPage() {

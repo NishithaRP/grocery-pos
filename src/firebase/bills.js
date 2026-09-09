@@ -14,8 +14,14 @@ import { db } from "./config";
 
 const billsCol = collection(db, "bills");
 
+// LOCAL calendar date, matching the same logic in reports.js - keeps the
+// write-side key and read-side key always in agreement regardless of time zone.
 function todayKey() {
-  return new Date().toISOString().split("T")[0]; // "2026-09-09"
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 // cartItems: [{ item_id, name, unit_price, qty, unit }]

@@ -21,11 +21,19 @@ export default function BillingPage() {
     setCart((prev) => {
       const existing = prev.find((l) => l.item_id === item.id);
       if (existing) {
+        if (existing.qty >= item.stock_qty) return prev; // already at max available stock
         return prev.map((l) => (l.item_id === item.id ? { ...l, qty: l.qty + 1 } : l));
       }
       return [
         ...prev,
-        { item_id: item.id, name: item.name, unit: item.unit, unit_price: item.selling_price, qty: 1 },
+        {
+          item_id: item.id,
+          name: item.name,
+          unit: item.unit,
+          unit_price: item.selling_price,
+          qty: 1,
+          max_qty: item.stock_qty,
+        },
       ];
     });
   }
@@ -35,7 +43,11 @@ export default function BillingPage() {
       setCart((prev) => prev.filter((l) => l.item_id !== itemId));
       return;
     }
-    setCart((prev) => prev.map((l) => (l.item_id === itemId ? { ...l, qty } : l)));
+    setCart((prev) =>
+      prev.map((l) =>
+        l.item_id === itemId ? { ...l, qty: Math.min(qty, l.max_qty) } : l
+      )
+    );
   }
 
   function removeLine(itemId) {

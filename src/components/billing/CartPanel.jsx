@@ -32,7 +32,12 @@ export default function CartPanel({
                 value={line.qty}
                 onChange={(e) => onQtyChange(line.item_id, Number(e.target.value) || 0)}
               />
-              <button type="button" onClick={() => onQtyChange(line.item_id, line.qty + 1)}>
+              <button
+                type="button"
+                onClick={() => onQtyChange(line.item_id, line.qty + 1)}
+                disabled={line.qty >= line.max_qty}
+                title={line.qty >= line.max_qty ? "No more in stock" : undefined}
+              >
                 +
               </button>
             </div>

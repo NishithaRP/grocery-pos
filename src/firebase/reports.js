@@ -2,8 +2,16 @@ import { doc, getDoc, collection, getDocs, query, where } from "firebase/firesto
 import { db } from "./config";
 import { getBillsInRange } from "./bills";
 
+// Uses LOCAL calendar date (not UTC) so "today" means today in the shop's
+// own time zone. toISOString() converts to UTC first, which silently shifts
+// the date back a day for time zones ahead of UTC (like Sri Lanka, UTC+5:30)
+// whenever the key is built from a local midnight Date object - that was
+// causing Reports to look up the wrong day's summary.
 function toDateKey(d) {
-  return d.toISOString().split("T")[0]; // "2026-09-08"
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 // Reads the pre-aggregated daily_summaries/{date} doc that the
