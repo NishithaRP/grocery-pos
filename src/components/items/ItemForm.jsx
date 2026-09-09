@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const UNITS = ["kg", "g", "L", "ml", "pc"];
 
-export default function ItemForm({ initial, onSave, onClose }) {
+export default function ItemForm({ initial, categories = [], onSave, onClose }) {
   const [form, setForm] = useState(
     initial || {
       name: "",
@@ -55,7 +55,13 @@ export default function ItemForm({ initial, onSave, onClose }) {
                 value={form.category}
                 onChange={(e) => set("category", e.target.value)}
                 placeholder="e.g. Grains"
+                list="category-suggestions"
               />
+              <datalist id="category-suggestions">
+                {categories.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </div>
             <div className="field">
               <label>Unit</label>

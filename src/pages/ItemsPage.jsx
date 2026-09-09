@@ -11,6 +11,10 @@ export default function ItemsPage() {
   const [editing, setEditing] = useState(null);
   const [editingPrice, setEditingPrice] = useState(null);
 
+  const categories = items
+    ? [...new Set(items.map((i) => i.category).filter(Boolean))].sort()
+    : [];
+
   async function refresh() {
     setItems(await getItems());
   }
@@ -52,6 +56,7 @@ export default function ItemsPage() {
 
       {showAdd && (
         <ItemForm
+          categories={categories}
           onSave={async (data) => {
             await addItem(data);
             refresh();
@@ -63,6 +68,7 @@ export default function ItemsPage() {
       {editing && (
         <ItemForm
           initial={editing}
+          categories={categories}
           onSave={async (data) => {
             await updateItem(editing.id, data);
             refresh();
