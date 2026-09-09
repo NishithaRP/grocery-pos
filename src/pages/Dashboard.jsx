@@ -32,24 +32,28 @@ export default function Dashboard() {
           <Loader />
         ) : (
           <div className="stat-grid">
-            <div className="stat">
+            <Link to="/reports" className="stat" style={{ textDecoration: "none", color: "inherit" }}>
               <div className="stat-label">Sales today</div>
               <div className="stat-value">Rs. {Number(summary.total_sales || 0).toFixed(2)}</div>
-            </div>
-            <div className="stat">
+            </Link>
+            <Link to="/reports" className="stat" style={{ textDecoration: "none", color: "inherit" }}>
               <div className="stat-label">Bills today</div>
               <div className="stat-value">{summary.bill_count || 0}</div>
-            </div>
-            <div className="stat">
+            </Link>
+            <Link to="/items" className="stat" style={{ textDecoration: "none", color: "inherit" }}>
               <div className="stat-label">Items in catalog</div>
               <div className="stat-value">{itemCount}</div>
-            </div>
-            <div className="stat">
+            </Link>
+            <Link
+              to={lowStock.length > 0 ? "/items" : "/reports"}
+              className="stat"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
               <div className="stat-label">Low stock alerts</div>
               <div className="stat-value" style={lowStock.length > 0 ? { color: "var(--danger)" } : undefined}>
                 {lowStock.length}
               </div>
-            </div>
+            </Link>
           </div>
         )}
 

@@ -245,6 +245,13 @@ select {
   border: 1px solid var(--border);
   border-radius: var(--radius-m);
   padding: 16px 18px;
+  display: block;
+  transition: border-color 0.12s ease, transform 0.12s ease;
+}
+
+.stat:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
 }
 
 .stat-label {
