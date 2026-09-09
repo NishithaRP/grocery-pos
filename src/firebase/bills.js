@@ -1,7 +1,6 @@
 import {
   collection,
   doc,
-  addDoc,
   getDoc,
   getDocs,
   query,
@@ -9,29 +8,41 @@ import {
   orderBy,
   serverTimestamp,
   writeBatch,
+  increment,
 } from "firebase/firestore";
 import { db } from "./config";
 
 const billsCol = collection(db, "bills");
 
-// cartItems: [{ item_id, name, unit_price, qty }]
-// Stock decrement + daily summary update happen server-side via the
-// onBillCreated Cloud Function - the client only writes the bill itself.
+function todayKey() {
+  return new Date().toISOString().split("T")[0]; // "2026-09-09"
+}
+
+// cartItems: [{ item_id, name, unit_price, qty, unit }]
+// Everything - the bill, its line items, the stock decrement on each item,
+// and today's rolled-up sales summary - is written in ONE atomic batch.
+// (This replaces the Cloud Function approach, since that needs the paid
+// Blaze plan. The trade-off: two people billing the exact same instant
+// could theoretically race on stock counts - fine for single-user use,
+// worth revisiting if this grows into a multi-cashier setup.)
 export async function createBill(cartItems, meta = {}) {
   const total = cartItems.reduce((sum, l) => sum + l.unit_price * l.qty, 0);
   const discount = Number(meta.discount) || 0;
+  const finalTotal = total - discount;
 
-  const billRef = await addDoc(billsCol, {
+  const batch = writeBatch(db);
+
+  const billRef = doc(billsCol);
+  batch.set(billRef, {
     bill_number: `B-${Date.now()}`,
     date: serverTimestamp(),
     customer_name: meta.customer_name || "",
     payment_method: meta.payment_method || "cash",
     discount,
-    total: total - discount,
+    total: finalTotal,
     created_by: meta.created_by || "unknown",
   });
 
-  const batch = writeBatch(db);
   cartItems.forEach((line) => {
     const lineRef = doc(collection(db, `bills/${billRef.id}/bill_items`));
     batch.set(lineRef, {
@@ -42,9 +53,23 @@ export async function createBill(cartItems, meta = {}) {
       unit_price_at_sale: line.unit_price,
       subtotal: line.unit_price * line.qty,
     });
-  });
-  await batch.commit();
 
+    const itemRef = doc(db, "items", line.item_id);
+    batch.update(itemRef, { stock_qty: increment(-line.qty) });
+  });
+
+  const summaryRef = doc(db, "daily_summaries", todayKey());
+  batch.set(
+    summaryRef,
+    {
+      total_sales: increment(finalTotal),
+      bill_count: increment(1),
+      updated_at: serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  await batch.commit();
   return billRef.id;
 }
 
