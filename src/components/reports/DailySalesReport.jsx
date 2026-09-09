@@ -9,7 +9,7 @@ export default function DailySalesReport({ summary, itemSales }) {
           <div className="stat-value">Rs. {Number(summary.total_sales || 0).toFixed(2)}</div>
         </div>
         <div className="stat">
-          <div className="stat-label">Gross income today</div>
+          <div className="stat-label">Profit today</div>
           <div className="stat-value" style={{ color: grossIncome < 0 ? "var(--danger)" : undefined }}>
             Rs. {grossIncome.toFixed(2)}
           </div>
